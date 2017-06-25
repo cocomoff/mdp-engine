@@ -47,71 +47,71 @@ namespace Online {
 
 namespace Dispatcher {
 
-template<typename T> class dispatcher_t {
+  template<typename T> class dispatcher_t {
     std::map<std::string, Algorithm::algorithm_t<T>*> algorithms_;
     std::map<std::string, Heuristic::heuristic_t<T>*> heuristics_;
     std::map<std::string, Online::Policy::policy_t<T>*> policies_;
 
   public:
     struct solve_result_t {
-        T state_;
-        std::string name_;
-        const Algorithm::algorithm_t<T> *algorithm_;
-        unsigned seed_;
-        unsigned problem_expansions_;
-        const Problem::hash_t<T> *hash_;
-        const Heuristic::heuristic_t<T> *heuristic_;
-        float time_raw_;
+      T state_;
+      std::string name_;
+      const Algorithm::algorithm_t<T> *algorithm_;
+      unsigned seed_;
+      unsigned problem_expansions_;
+      const Problem::hash_t<T> *hash_;
+      const Heuristic::heuristic_t<T> *heuristic_;
+      float time_raw_;
     };
 
     struct evaluate_result_t {
-        std::string name_;
-        const Online::Policy::policy_t<T> *policy_;
-        unsigned seed_;
+      std::string name_;
+      const Online::Policy::policy_t<T> *policy_;
+      unsigned seed_;
 
-        unsigned problem_expansions_;
+      unsigned problem_expansions_;
 
-        float eval_value_;
-        float eval_stdev_;
+      float eval_value_;
+      float eval_stdev_;
 
-        float time_raw_;
-        float time_policy_;
-        float time_heuristic_;
-        float time_algorithm_;
+      float time_raw_;
+      float time_policy_;
+      float time_heuristic_;
+      float time_algorithm_;
     };
 
     dispatcher_t() { }
     virtual ~dispatcher_t() {
-        for( typename std::map<std::string, Algorithm::algorithm_t<T>*>::const_iterator it = algorithms_.begin(); it != algorithms_.end(); ++it )
-            delete it->second;
-        for( typename std::map<std::string, Heuristic::heuristic_t<T>*>::const_iterator it = heuristics_.begin(); it != heuristics_.end(); ++it )
-            delete it->second;
-        for( typename std::map<std::string, Online::Policy::policy_t<T>*>::const_iterator it = policies_.begin(); it != policies_.end(); ++it )
-            delete it->second;
+      for( typename std::map<std::string, Algorithm::algorithm_t<T>*>::const_iterator it = algorithms_.begin(); it != algorithms_.end(); ++it )
+        delete it->second;
+      for( typename std::map<std::string, Heuristic::heuristic_t<T>*>::const_iterator it = heuristics_.begin(); it != heuristics_.end(); ++it )
+        delete it->second;
+      for( typename std::map<std::string, Online::Policy::policy_t<T>*>::const_iterator it = policies_.begin(); it != policies_.end(); ++it )
+        delete it->second;
     }
 
     void insert_algorithm(const std::string &request, Algorithm::algorithm_t<T> *algorithm) {
-        algorithms_.insert(std::make_pair(request, algorithm));
+      algorithms_.insert(std::make_pair(request, algorithm));
     }
     Algorithm::algorithm_t<T>* fetch_algorithm(const std::string &request) {
-        typename std::map<std::string, Algorithm::algorithm_t<T>*>::const_iterator it = algorithms_.find(request);
-        return it == algorithms_.end() ? 0 : it->second;
+      typename std::map<std::string, Algorithm::algorithm_t<T>*>::const_iterator it = algorithms_.find(request);
+      return it == algorithms_.end() ? 0 : it->second;
     }
 
     void insert_heuristic(const std::string &request, Heuristic::heuristic_t<T> *heuristic) {
-        heuristics_.insert(std::make_pair(request, heuristic));
+      heuristics_.insert(std::make_pair(request, heuristic));
     }
     Heuristic::heuristic_t<T>* fetch_heuristic(const std::string &request) {
-        typename std::map<std::string, Heuristic::heuristic_t<T>*>::const_iterator it = heuristics_.find(request);
-        return it == heuristics_.end() ? 0 : it->second;
+      typename std::map<std::string, Heuristic::heuristic_t<T>*>::const_iterator it = heuristics_.find(request);
+      return it == heuristics_.end() ? 0 : it->second;
     }
 
     void insert_policy(const std::string &request, Online::Policy::policy_t<T> *policy) {
-        policies_.insert(std::make_pair(request, policy));
+      policies_.insert(std::make_pair(request, policy));
     }
     Online::Policy::policy_t<T>* fetch_policy(const std::string &request) {
-        typename std::map<std::string, Online::Policy::policy_t<T>*>::const_iterator it = policies_.find(request);
-        return it == policies_.end() ? 0 : it->second;
+      typename std::map<std::string, Online::Policy::policy_t<T>*>::const_iterator it = policies_.find(request);
+      return it == policies_.end() ? 0 : it->second;
     }
 
     void create_request(const Problem::problem_t<T> &problem, const std::string &request_str);
@@ -120,7 +120,7 @@ template<typename T> class dispatcher_t {
     void print_stats(std::ostream &os, const solve_result_t &result) const;
     void evaluate(const std::string &name, const Online::Policy::policy_t<T> &policy, const T &s, evaluate_result_t &result, unsigned num_trials, unsigned max_evaluation_depth, bool verbose) const;
     void print_stats(std::ostream &os, const evaluate_result_t &result) const;
-};
+  };
 
 }; // namespace Dispatcher
 
@@ -147,17 +147,17 @@ template<typename T> class dispatcher_t {
 
 namespace Dispatcher {
 
-template<typename T> void dispatcher_t<T>::create_request(const Problem::problem_t<T> &problem, const std::string &request_str) {
+  template<typename T> void dispatcher_t<T>::create_request(const Problem::problem_t<T> &problem, const std::string &request_str) {
     std::multimap<std::string, std::string> request;
     Utils::tokenize(request_str, request);
     for( std::multimap<std::string, std::string>::const_iterator it = request.begin(); it != request.end(); ++it )
-        create_request(problem, it->first, it->second);
-}
+      create_request(problem, it->first, it->second);
+  }
 
-template<typename T> void dispatcher_t<T>::create_request(const Problem::problem_t<T> &problem, const std::string &type, const std::string &request) {
+  template<typename T> void dispatcher_t<T>::create_request(const Problem::problem_t<T> &problem, const std::string &type, const std::string &request) {
     if( (type != "algorithm") && (type != "heuristic") && (type != "policy") ) {
-        std::cout << Utils::error() << "dispatcher: create-request: invalid '" << type << "=" << request << "'" << std::endl;
-        return;
+      std::cout << Utils::error() << "dispatcher: create-request: invalid '" << type << "=" << request << "'" << std::endl;
+      return;
     }
 
     // parse request
@@ -169,112 +169,112 @@ template<typename T> void dispatcher_t<T>::create_request(const Problem::problem
 
     // algorithms
     if( type == "algorithm" ) {
-        if( fetch_algorithm(request) != 0 ) {
+      if( fetch_algorithm(request) != 0 ) {
 #ifdef DEBUG
-            std::cout << "dispatcher: create-request: found algorithm '" << request << "'" << std::endl;
+        std::cout << "dispatcher: create-request: found algorithm '" << request << "'" << std::endl;
 #endif
-            return;
-        }
-        std::cout << "dispatcher: create-request: creating: type=" << type << ", request=" << request << std::endl;
+        return;
+      }
+      std::cout << "dispatcher: create-request: creating: type=" << type << ", request=" << request << std::endl;
 
-        Algorithm::algorithm_t<T> *algorithm = 0;
-        if( name == "hdp" )
-            algorithm = new Algorithm::hdp_t<T>(problem);
-        else if( name == "improved-lao" )
-            algorithm = new Algorithm::improved_lao_t<T>(problem);
-        else if( name == "ldfs" )
-            algorithm = new Algorithm::ldfs_t<T>(problem);
-        else if( name == "ldfs-plus" )
-            algorithm = new Algorithm::ldfs_plus_t<T>(problem);
-        else if( (name == "standard-lrtdp") || (name == "lrtdp") )
-            algorithm = new Algorithm::standard_lrtdp_t<T>(problem);
-        else if( name == "uniform-lrtdp" )
-            algorithm = new Algorithm::uniform_lrtdp_t<T>(problem);
-        else if( name == "bounded-lrtdp" )
-            algorithm = new Algorithm::bounded_lrtdp_t<T>(problem);
-        else if( name == "plain-check" )
-            algorithm = new Algorithm::plain_check_t<T>(problem);
-        else if( (name == "simple-a*" ) || (name == "simple-astar") )
-            algorithm = new Algorithm::simple_astar_t<T>(problem);
-        else if( name == "value-iteration" )
-            algorithm = new Algorithm::value_iteration_t<T>(problem);
+      Algorithm::algorithm_t<T> *algorithm = 0;
+      if( name == "hdp" )
+        algorithm = new Algorithm::hdp_t<T>(problem);
+      else if( name == "improved-lao" )
+        algorithm = new Algorithm::improved_lao_t<T>(problem);
+      else if( name == "ldfs" )
+        algorithm = new Algorithm::ldfs_t<T>(problem);
+      else if( name == "ldfs-plus" )
+        algorithm = new Algorithm::ldfs_plus_t<T>(problem);
+      else if( (name == "standard-lrtdp") || (name == "lrtdp") )
+        algorithm = new Algorithm::standard_lrtdp_t<T>(problem);
+      else if( name == "uniform-lrtdp" )
+        algorithm = new Algorithm::uniform_lrtdp_t<T>(problem);
+      else if( name == "bounded-lrtdp" )
+        algorithm = new Algorithm::bounded_lrtdp_t<T>(problem);
+      else if( name == "plain-check" )
+        algorithm = new Algorithm::plain_check_t<T>(problem);
+      else if( (name == "simple-a*" ) || (name == "simple-astar") )
+        algorithm = new Algorithm::simple_astar_t<T>(problem);
+      else if( name == "value-iteration" )
+        algorithm = new Algorithm::value_iteration_t<T>(problem);
 
-        if( algorithm != 0 ) {
-            algorithm->set_parameters(parameters, *this);
-            algorithms_.insert(std::make_pair(request, algorithm));
-            return;
-        }
+      if( algorithm != 0 ) {
+        algorithm->set_parameters(parameters, *this);
+        algorithms_.insert(std::make_pair(request, algorithm));
+        return;
+      }
     }
 
     // heuristics
     if( type == "heuristic" ) {
-        if( fetch_heuristic(request) != 0 ) {
+      if( fetch_heuristic(request) != 0 ) {
 #ifdef DEBUG
-            std::cout << "dispatcher: create-request: found heuristic '" << request << "'" << std::endl;
+        std::cout << "dispatcher: create-request: found heuristic '" << request << "'" << std::endl;
 #endif
-            return;
-        }
-        std::cout << "dispatcher: create-request: creating: type=" << type << ", request=" << request << std::endl;
+        return;
+      }
+      std::cout << "dispatcher: create-request: creating: type=" << type << ", request=" << request << std::endl;
 
-        Heuristic::heuristic_t<T> *heuristic = 0;
-        if( name == "zero" )
-            heuristic = new Heuristic::zero_heuristic_t<T>(problem);
-        else if( name == "min-min" )
-            heuristic = new Heuristic::min_min_heuristic_t<T>(problem);
-        else if( name == "optimal" )
-            heuristic = new Heuristic::optimal_heuristic_t<T>(problem);
-        else if( name == "scaled" )
-            heuristic = new Heuristic::scaled_heuristic_t<T>(problem);
+      Heuristic::heuristic_t<T> *heuristic = 0;
+      if( name == "zero" )
+        heuristic = new Heuristic::zero_heuristic_t<T>(problem);
+      else if( name == "min-min" )
+        heuristic = new Heuristic::min_min_heuristic_t<T>(problem);
+      else if( name == "optimal" )
+        heuristic = new Heuristic::optimal_heuristic_t<T>(problem);
+      else if( name == "scaled" )
+        heuristic = new Heuristic::scaled_heuristic_t<T>(problem);
 
-        if( heuristic != 0 ) {
-            heuristic->set_parameters(parameters, *this);
-            heuristics_.insert(std::make_pair(request, heuristic));
-            return;
-        }
+      if( heuristic != 0 ) {
+        heuristic->set_parameters(parameters, *this);
+        heuristics_.insert(std::make_pair(request, heuristic));
+        return;
+      }
     }
 
     // policies
     if( type == "policy" ) {
-        if( fetch_policy(request) != 0 ) {
+      if( fetch_policy(request) != 0 ) {
 #ifdef DEBUG
-            std::cout << "dispatcher: create-request: found policy '" << request << "'" << std::endl;
+        std::cout << "dispatcher: create-request: found policy '" << request << "'" << std::endl;
 #endif
-            return;
-        }
-        std::cout << "dispatcher: create-request: creating: type=" << type << ", request=" << request << std::endl;
+        return;
+      }
+      std::cout << "dispatcher: create-request: creating: type=" << type << ", request=" << request << std::endl;
 
-        Online::Policy::policy_t<T> *policy = 0;
-        if( name == "optimal" )
-            policy = new Online::Policy::optimal_policy_t<T>(problem);
-        else if( name == "greedy" )
-            policy = new Online::Policy::base_greedy_t<T>(problem);
-        else if( name == "random" )
-            policy = new Online::Policy::random_t<T>(problem);
-        else if( name == "rollout" )
-            policy = new Online::Policy::Rollout::nested_rollout_t<T>(problem);
-        else if( name == "uct" )
-            policy = new Online::Policy::UCT::uct_t<T>(problem);
-        else if( name == "aot" )
-            policy = new Online::Policy::AOT::aot_t<T>(problem);
-        else if( name == "aot-gh" )
-            assert(0);
-        else if( name == "aot-path" )
-            assert(0);
-        else if( name == "finite-horizon-lrtdp" )
-            policy = new Online::Policy::RTDP::finite_horizon_lrtdp_t<T>(problem);
+      Online::Policy::policy_t<T> *policy = 0;
+      if( name == "optimal" )
+        policy = new Online::Policy::optimal_policy_t<T>(problem);
+      else if( name == "greedy" )
+        policy = new Online::Policy::base_greedy_t<T>(problem);
+      else if( name == "random" )
+        policy = new Online::Policy::random_t<T>(problem);
+      else if( name == "rollout" )
+        policy = new Online::Policy::Rollout::nested_rollout_t<T>(problem);
+      else if( name == "uct" )
+        policy = new Online::Policy::UCT::uct_t<T>(problem);
+      else if( name == "aot" )
+        policy = new Online::Policy::AOT::aot_t<T>(problem);
+      else if( name == "aot-gh" )
+        assert(0);
+      else if( name == "aot-path" )
+        assert(0);
+      else if( name == "finite-horizon-lrtdp" )
+        policy = new Online::Policy::RTDP::finite_horizon_lrtdp_t<T>(problem);
 
-        if( policy != 0 ) {
-            policy->set_parameters(parameters, *this);
-            policies_.insert(std::make_pair(request, policy));
-            return;
-        }
+      if( policy != 0 ) {
+        policy->set_parameters(parameters, *this);
+        policies_.insert(std::make_pair(request, policy));
+        return;
+      }
     }
 
     // if this far, request is not recognized
     std::cout << Utils::error() << "dispatcher: create-request: unrecognized: type=" << type << ", request=" << request << std::endl;
-}
+  }
 
-template<typename T> void dispatcher_t<T>::solve(const std::string &name, const Algorithm::algorithm_t<T> &algorithm, const T &s, solve_result_t &result) const {
+  template<typename T> void dispatcher_t<T>::solve(const std::string &name, const Algorithm::algorithm_t<T> &algorithm, const T &s, solve_result_t &result) const {
     std::cout << "dispatcher: solve: " << name << std::endl;
     const Problem::problem_t<T> &problem = algorithm.problem();
 
@@ -297,9 +297,9 @@ template<typename T> void dispatcher_t<T>::solve(const std::string &name, const 
 
     // time stats
     result.time_raw_ = end_time - start_time;
-}
+  }
 
-template<typename T> void dispatcher_t<T>::print_stats(std::ostream &os, const solve_result_t &result) const {
+  template<typename T> void dispatcher_t<T>::print_stats(std::ostream &os, const solve_result_t &result) const {
     const Algorithm::algorithm_t<T> &algorithm = *result.algorithm_;
     const Problem::problem_t<T> &problem = algorithm.problem();
 
@@ -315,7 +315,7 @@ template<typename T> void dispatcher_t<T>::print_stats(std::ostream &os, const s
     os << Utils::green() << " hash.value=" << hash.value(result.state_) << Utils::normal()
        << " hash.updates=" << hash.updates();
     if( (result.name_.substr(0, 12) != "simple_astar") && (result.name_.substr(0, 9) != "simple_a*") )
-        os << " hash.policy-size=" << problem.policy_size(hash, result.state_);
+      os << " hash.policy-size=" << problem.policy_size(hash, result.state_);
 
     // stats fron heuristic
     const Heuristic::heuristic_t<T> *heuristic = algorithm.heuristic();
@@ -331,9 +331,9 @@ template<typename T> void dispatcher_t<T>::print_stats(std::ostream &os, const s
        << " time.heuristic=" << (heuristic == 0 ? std::string("na") : std::to_string(time_heuristic))
        << " time.algorithm=" << result.time_raw_ - time_heuristic
        << std::endl;
-}
+  }
 
-template<typename T> void dispatcher_t<T>::evaluate(const std::string &name, const Online::Policy::policy_t<T> &policy, const T &s, evaluate_result_t &result, unsigned num_trials, unsigned max_evaluation_depth, bool verbose) const {
+  template<typename T> void dispatcher_t<T>::evaluate(const std::string &name, const Online::Policy::policy_t<T> &policy, const T &s, evaluate_result_t &result, unsigned num_trials, unsigned max_evaluation_depth, bool verbose) const {
     std::cout << "dispatcher: evaluate: " << name << std::endl;
     const Problem::problem_t<T> &problem = policy.problem();
     policy.reset_stats();
@@ -354,9 +354,9 @@ template<typename T> void dispatcher_t<T>::evaluate(const std::string &name, con
 
     // time stats
     result.time_raw_ = end_time - start_time;
-}
+  }
 
-template<typename T> void dispatcher_t<T>::print_stats(std::ostream &os, const evaluate_result_t &result) const {
+  template<typename T> void dispatcher_t<T>::print_stats(std::ostream &os, const evaluate_result_t &result) const {
     const Online::Policy::policy_t<T> &policy = *result.policy_;
    
     // general stats 
@@ -374,22 +374,22 @@ template<typename T> void dispatcher_t<T>::print_stats(std::ostream &os, const e
     os << " time.raw=" << result.time_raw_
        << " time.setup=" << policy.setup_time();
     if( policy.uses_base_policy() != Online::Policy::policy_t<T>::usage_t::No )
-         os << " time.base-policy=" << policy.base_policy_time();
+      os << " time.base-policy=" << policy.base_policy_time();
     if( policy.uses_heuristic() != Online::Policy::policy_t<T>::usage_t::No )
-         os << " time.heuristic=" << policy.heuristic_time();
+      os << " time.heuristic=" << policy.heuristic_time();
     os << " time.policy=" << result.time_raw_ - policy.base_policy_time() - policy.heuristic_time()
        << std::endl;
     policy.print_other_stats(os, 2);
-}
+  }
 
 }; // namespace Dispatcher
 
 
 namespace Online {
 
-namespace Evaluation {
+  namespace Evaluation {
 
-}; // namespace Evaluation
+  }; // namespace Evaluation
 
 }; // namespace Online
 

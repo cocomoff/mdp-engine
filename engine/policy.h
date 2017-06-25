@@ -32,87 +32,87 @@
 
 namespace Online {
 
-extern unsigned g_seed;
+  extern unsigned g_seed;
 
-namespace Policy {
+  namespace Policy {
 
 // Abstract class that defines the interface for action-selection polcicies
-template<typename T> class policy_t {
-  protected:
-    const Problem::problem_t<T> &problem_;
-    unsigned seed_;
+    template<typename T> class policy_t {
+    protected:
+      const Problem::problem_t<T> &problem_;
+      unsigned seed_;
 
-    mutable float setup_time_;
-    mutable float base_policy_time_;
-    mutable float heuristic_time_;
-    mutable unsigned decisions_;
+      mutable float setup_time_;
+      mutable float base_policy_time_;
+      mutable float heuristic_time_;
+      mutable unsigned decisions_;
 
-  public:
-    policy_t(const Problem::problem_t<T> &problem)
-      : problem_(problem),
-        seed_(g_seed),
-        setup_time_(0),
-        base_policy_time_(0),
-        heuristic_time_(0),
-        decisions_(0) {
-    }
-    virtual ~policy_t() { }
-    virtual policy_t<T>* clone() const = 0;
-    virtual std::string name() const = 0;
-    virtual Problem::action_t operator()(const T &s) const = 0;
-    virtual void reset_stats() const = 0;
-    virtual void print_other_stats(std::ostream &os, int indent) const = 0;
-    virtual void set_parameters(const std::multimap<std::string, std::string> &parameters, Dispatcher::dispatcher_t<T> &dispatcher) = 0;
+    public:
+      policy_t(const Problem::problem_t<T> &problem)
+        : problem_(problem),
+          seed_(g_seed),
+          setup_time_(0),
+          base_policy_time_(0),
+          heuristic_time_(0),
+          decisions_(0) {
+      }
+      virtual ~policy_t() { }
+      virtual policy_t<T>* clone() const = 0;
+      virtual std::string name() const = 0;
+      virtual Problem::action_t operator()(const T &s) const = 0;
+      virtual void reset_stats() const = 0;
+      virtual void print_other_stats(std::ostream &os, int indent) const = 0;
+      virtual void set_parameters(const std::multimap<std::string, std::string> &parameters, Dispatcher::dispatcher_t<T> &dispatcher) = 0;
 
-    typedef enum { No, Yes, Optional } usage_t;
-    virtual usage_t uses_base_policy() const = 0;
-    virtual usage_t uses_heuristic() const = 0;
-    virtual usage_t uses_algorithm() const = 0;
+      typedef enum { No, Yes, Optional } usage_t;
+      virtual usage_t uses_base_policy() const = 0;
+      virtual usage_t uses_heuristic() const = 0;
+      virtual usage_t uses_algorithm() const = 0;
 
-    unsigned seed() const { return seed_; }
-    float setup_time() const { return setup_time_; }
-    float base_policy_time() const { return base_policy_time_; }
-    float heuristic_time() const { return heuristic_time_; }
-    unsigned decisions() const { return decisions_; }
-    const Problem::problem_t<T>& problem() const { return problem_; }
-};
+      unsigned seed() const { return seed_; }
+      float setup_time() const { return setup_time_; }
+      float base_policy_time() const { return base_policy_time_; }
+      float heuristic_time() const { return heuristic_time_; }
+      unsigned decisions() const { return decisions_; }
+      const Problem::problem_t<T>& problem() const { return problem_; }
+    };
 
 // Abstract class for improvement of a base policy
-template<typename T> class improvement_t : public policy_t<T> {
-  protected:
-    const policy_t<T> *base_policy_;
+    template<typename T> class improvement_t : public policy_t<T> {
+    protected:
+      const policy_t<T> *base_policy_;
 
-    improvement_t(const Problem::problem_t<T> &problem, const policy_t<T> *base_policy)
-      : policy_t<T>(problem), base_policy_(base_policy) {
-    }
+      improvement_t(const Problem::problem_t<T> &problem, const policy_t<T> *base_policy)
+        : policy_t<T>(problem), base_policy_(base_policy) {
+      }
 
-  public:
-    improvement_t(const Problem::problem_t<T> &problem)
-      : policy_t<T>(problem), base_policy_(0) {
-    }
-    virtual ~improvement_t() { }
-};
+    public:
+      improvement_t(const Problem::problem_t<T> &problem)
+        : policy_t<T>(problem), base_policy_(0) {
+      }
+      virtual ~improvement_t() { }
+    };
 
-}; // namespace Policy
+  }; // namespace Policy
 
 
 // Online evaluation
-namespace Evaluation {
+  namespace Evaluation {
 
-template<typename T>
-inline float evaluation_trial(const Policy::policy_t<T> &policy, const T &s, unsigned max_depth) {
-    T state = s;
-    size_t steps = 0;
-    float cost = 0;
-    float discount = 1;
-    if( policy.problem().dead_end(state) ) return policy.problem().dead_end_value();
-    while( (steps < max_depth) && !policy.problem().terminal(state) ) {
+    template<typename T>
+    inline float evaluation_trial(const Policy::policy_t<T> &policy, const T &s, unsigned max_depth) {
+      T state = s;
+      size_t steps = 0;
+      float cost = 0;
+      float discount = 1;
+      if( policy.problem().dead_end(state) ) return policy.problem().dead_end_value();
+      while( (steps < max_depth) && !policy.problem().terminal(state) ) {
         //std::cout << "evaluation_trial: " << state << std::flush;
         Problem::action_t action = policy(state);
         //std::cout << ", a=" << action << std::endl;
         if( action == Problem::noop ) {
-            //std::cout << "no applicable action" << std::endl;
-            return cost + policy.problem().dead_end_value();
+          //std::cout << "no applicable action" << std::endl;
+          return cost + policy.problem().dead_end_value();
         }
         assert(policy.problem().applicable(state, action));
         std::pair<T, bool> p = policy.problem().sample(state, action);
@@ -121,63 +121,65 @@ inline float evaluation_trial(const Policy::policy_t<T> &policy, const T &s, uns
         state = p.first;
         ++steps;
         if( policy.problem().dead_end(state) ) {
-            return cost + policy.problem().dead_end_value();
+          return cost + policy.problem().dead_end_value();
         }
+      }
+      return cost;
     }
-    return cost;
-}
 
-template<typename T>
-inline float evaluation(const Policy::policy_t<T> &policy, const T &s, unsigned number_trials, unsigned max_depth, bool verbose = false) {
-    float value = 0;
-    if( verbose ) std::cout << "#trials=" << number_trials << ":";
-    for( unsigned i = 0; i < number_trials; ++i ) {
+    template<typename T>
+    inline float evaluation(const Policy::policy_t<T> &policy, const T &s, unsigned number_trials, unsigned max_depth, bool verbose = false) {
+      float value = 0;
+      // if( verbose ) std::cout << "#trials=" << number_trials << ":";
+      for( unsigned i = 0; i < number_trials; ++i ) {
         if( verbose ) std::cout << " " << i << std::flush;
         value += evaluation_trial(policy, s, max_depth);
+      }
+      if( verbose ) std::cout << std::endl;
+      return value / number_trials;
     }
-    if( verbose ) std::cout << std::endl;
-    return value / number_trials;
-}
 
-template<typename T>
-inline std::pair<float, float>
-  evaluation_with_stdev(const Policy::policy_t<T> &policy,
-                        const T &s,
-                        unsigned number_trials,
-                        unsigned max_depth,
-                        bool verbose = false) {
-    float sum = 0;
-    std::vector<float> values;
-    values.reserve(number_trials);
-    if( verbose ) std::cout << "#trials=" << number_trials << ":";
-    for( unsigned trial = 0; trial < number_trials; ++trial ) {
-        if( verbose ) std::cout << " " << trial << std::flush;
+    template<typename T>
+    inline std::pair<float, float>
+    evaluation_with_stdev(const Policy::policy_t<T> &policy,
+                          const T &s,
+                          unsigned number_trials,
+                          unsigned max_depth,
+                          bool verbose = false) {
+      float sum = 0;
+      std::vector<float> values;
+      values.reserve(number_trials);
+      // if( verbose ) std::cout << "#trials=" << number_trials << ":";
+      for( unsigned trial = 0; trial < number_trials; ++trial ) {
+        // if( verbose ) std::cout << " " << trial << std::flush;
         values.push_back(evaluation_trial(policy, s, max_depth));
         sum += values.back();
-        if( verbose ) {
-            std::cout << "(" << std::setprecision(1) << sum/(1+trial) << ")"
-                      << std::flush;
-        }
-    }
-    if( verbose ) std::cout << std::endl;
+        /*
+          if( verbose ) {
+          std::cout << "(" << std::setprecision(1) << sum/(1+trial) << ")"
+          << std::flush;
+          }
+        */
+      }
+      if( verbose ) std::cout << std::endl;
 
-    // compute average
-    float avg = 0;
-    for( unsigned i = 0; i < number_trials; ++i ) {
+      // compute average
+      float avg = 0;
+      for( unsigned i = 0; i < number_trials; ++i ) {
         avg += values[i];
-    }
-    avg /= number_trials;
+      }
+      avg /= number_trials;
 
-    // compute stdev
-    float stdev = 0;
-    for( unsigned i = 0; i < number_trials; ++i ) {
+      // compute stdev
+      float stdev = 0;
+      for( unsigned i = 0; i < number_trials; ++i ) {
         stdev += (avg - values[i]) * (avg - values[i]);
+      }
+      stdev = sqrt(stdev) / (number_trials - 1);
+      return std::make_pair(avg, stdev);
     }
-    stdev = sqrt(stdev) / (number_trials - 1);
-    return std::make_pair(avg, stdev);
-}
 
-}; // namespace Evaluation
+  }; // namespace Evaluation
 
 }; // namespace Online
 
