@@ -126,6 +126,7 @@ namespace Online {
 	}
 
         void debug_print_table() const {
+          /*
           auto it = table_.begin();
           std::cout << "\n[DEBUG table print]" << std::endl;
           while (it != table_.end()) {
@@ -136,11 +137,12 @@ namespace Online {
             ++it;
           }
           std::cout << std::endl;
+          */
         }
 
 	virtual Problem::action_t operator()(const T &s) const {
 	  if( base_policy_ == 0 ) {
-            std::cout << Utils::error() << "(base) policy must be specified for uct() policy!" << std::endl;
+            // std::cout << Utils::error() << "(base) policy must be specified for uct() policy!" << std::endl;
             exit(1);
 	  }
 
@@ -246,8 +248,10 @@ namespace Online {
             std::vector<int> counts(1 + nA, 0);
             table_.insert(std::make_pair(std::make_pair(depth, s), data_t(values, counts)));
             float value = evaluate(s, depth);
+            /*
             std::cout << " state " << s << " at depth " << depth
                       << " insert in tree w/ value=" << value << std::endl;
+            */
             return value;
 	  } else {
             // select action for this node and increase counts
@@ -259,11 +263,13 @@ namespace Online {
             std::pair<const T, bool> p = problem_.sample(s, a);
             float cost = problem_.cost(s, a);
 
+            /*
             std::cout << " count=" << it->second.counts_[0]
                       << " fetch " << std::setprecision(5) << it->second.values_[1+a]
                       << " a=" << a
                       << " next=" << p.first
                       << std::endl;
+            */
 
             // do recursion and update value
             float &old_value = it->second.values_[1+a];

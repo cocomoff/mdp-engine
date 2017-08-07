@@ -170,12 +170,9 @@ namespace Dispatcher {
     // algorithms
     if( type == "algorithm" ) {
       if( fetch_algorithm(request) != 0 ) {
-#ifdef DEBUG
-        std::cout << "dispatcher: create-request: found algorithm '" << request << "'" << std::endl;
-#endif
         return;
       }
-      std::cout << "dispatcher: create-request: creating: type=" << type << ", request=" << request << std::endl;
+      // std::cout << "dispatcher: create-request: creating: type=" << type << ", request=" << request << std::endl;
 
       Algorithm::algorithm_t<T> *algorithm = 0;
       if( name == "hdp" )
@@ -334,7 +331,7 @@ namespace Dispatcher {
   }
 
   template<typename T> void dispatcher_t<T>::evaluate(const std::string &name, const Online::Policy::policy_t<T> &policy, const T &s, evaluate_result_t &result, unsigned num_trials, unsigned max_evaluation_depth, bool verbose) const {
-    std::cout << "dispatcher: evaluate: " << name << std::endl;
+    // std::cout << "dispatcher: evaluate: " << name << std::endl;
     const Problem::problem_t<T> &problem = policy.problem();
     policy.reset_stats();
 
