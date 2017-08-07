@@ -206,12 +206,9 @@ namespace Dispatcher {
     // heuristics
     if( type == "heuristic" ) {
       if( fetch_heuristic(request) != 0 ) {
-#ifdef DEBUG
-        std::cout << "dispatcher: create-request: found heuristic '" << request << "'" << std::endl;
-#endif
         return;
       }
-      std::cout << "dispatcher: create-request: creating: type=" << type << ", request=" << request << std::endl;
+      // std::cout << "dispatcher: create-request: creating: type=" << type << ", request=" << request << std::endl;
 
       Heuristic::heuristic_t<T> *heuristic = 0;
       if( name == "zero" )
@@ -233,12 +230,9 @@ namespace Dispatcher {
     // policies
     if( type == "policy" ) {
       if( fetch_policy(request) != 0 ) {
-#ifdef DEBUG
-        std::cout << "dispatcher: create-request: found policy '" << request << "'" << std::endl;
-#endif
         return;
       }
-      std::cout << "dispatcher: create-request: creating: type=" << type << ", request=" << request << std::endl;
+      // std::cout << "dispatcher: create-request: creating: type=" << type << ", request=" << request << std::endl;
 
       Online::Policy::policy_t<T> *policy = 0;
       if( name == "optimal" )
@@ -272,7 +266,7 @@ namespace Dispatcher {
   }
 
   template<typename T> void dispatcher_t<T>::solve(const std::string &name, const Algorithm::algorithm_t<T> &algorithm, const T &s, solve_result_t &result) const {
-    std::cout << "dispatcher: solve: " << name << std::endl;
+    // std::cout << "dispatcher: solve: " << name << std::endl;
     const Problem::problem_t<T> &problem = algorithm.problem();
 
     result.name_ = name;
@@ -356,7 +350,11 @@ namespace Dispatcher {
   template<typename T> void dispatcher_t<T>::print_stats(std::ostream &os, const evaluate_result_t &result) const {
     const Online::Policy::policy_t<T> &policy = *result.policy_;
    
-    // general stats 
+    // general stats
+    os << Utils::green() << result.eval_value_
+       << "," << result.eval_stdev_ << Utils::normal() << std::endl;
+
+    /*
     os << Utils::green() << "stats:" << Utils::normal()
        << " type=eval"
        << " name=" << result.name_
@@ -376,6 +374,7 @@ namespace Dispatcher {
       os << " time.heuristic=" << policy.heuristic_time();
     os << " time.policy=" << result.time_raw_ - policy.base_policy_time() - policy.heuristic_time()
        << std::endl;
+    */
     policy.print_other_stats(os, 2);
   }
 

@@ -161,7 +161,7 @@ namespace Online {
           }
         */
       }
-      if( verbose ) std::cout << std::endl;
+      // if( verbose ) std::cout << std::endl;
 
       // compute average
       float avg = 0;

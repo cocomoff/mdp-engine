@@ -195,7 +195,7 @@ namespace Online {
             base_policy_ = dispatcher.fetch_policy(it->second);
 	  }
 	  policy_t<T>::setup_time_ = base_policy_ == 0 ? 0 : base_policy_->setup_time();
-          // #ifdef DEBUG
+          /*
 	  std::cout << "debug: uct(): params:"
 		    << " width=" << width_
 		    << " horizon=" << horizon_
@@ -203,7 +203,7 @@ namespace Online {
 		    << " random-ties=" << (random_ties_ ? "true" : "false")
 		    << " policy=" << (base_policy_ == 0 ? std::string("null") : base_policy_->name())
 		    << std::endl;
-          // #endif
+          */
 	}
 	virtual typename policy_t<T>::usage_t uses_base_policy() const { return policy_t<T>::usage_t::Yes; }
 	virtual typename policy_t<T>::usage_t uses_heuristic() const { return policy_t<T>::usage_t::No; }
@@ -235,7 +235,6 @@ namespace Online {
 	  }
 
 	  if( problem_.dead_end(s) ) {
-            // std::cout << " dead-end" << std::endl;
             return problem_.dead_end_value();
 	  }
 

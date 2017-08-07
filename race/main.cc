@@ -73,7 +73,7 @@ int main(int argc, const char **argv) {
   }
 
   // build problem instances
-  cout << "main: seed=" << Algorithm::g_seed << endl;
+  // cout << "main: seed=" << Algorithm::g_seed << endl;
   Random::set_seed(Algorithm::g_seed);
 
   grid_t grid;
@@ -130,7 +130,9 @@ int main(int argc, const char **argv) {
   }
 
 
-  cout << Utils::warning() << "the following stats may aggregate figures when elements are shared among policies" << endl;
+  // cout << Utils::warning() << "the following stats may aggregate figures when elements are shared among policies" << endl;
+  cout << Utils::red() << "num result "
+       << int(evaluate_results.size()) << Utils::normal() << endl;
   if( !evaluate_results.empty() ) {
     for( int i = 0; i < int(evaluate_results.size()); ++i ) {
       dispatcher.print_stats(cout, evaluate_results[i]);
